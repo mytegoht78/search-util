@@ -122,6 +122,9 @@ body.resizing iframe{pointer-events:none}
 .delTog.on .sw::after{transform:translateX(10px)}
 body:not(.delOn) .catHead .ib.del, body:not(.delOn) .w .x{display:none !important}
 body.delOn .catHead .ib.del, body.delOn .w .x{display:inline}
+/* 読み取り専用（この端末だけ）：編集の入口を全部隠す */
+body.ro .addWord, body.ro .sideFoot, body.ro .catHead .addSub, body.ro .catHead .del, body.ro .catHead .sens, body.ro .catHead .csSet, body.ro .w .x, body.ro .w .hx, body.ro #manage{display:none !important}
+body.ro .catHead .cs{pointer-events:none}
 .wEdit{width:140px;max-width:100%;padding:3px 10px;border:1px solid var(--accent);border-radius:999px;background:var(--panel);outline:none;font-size:13px}
 .setBtn{position:relative}
 .setBtn.warn::after{content:"";position:absolute;top:4px;right:4px;width:7px;height:7px;border-radius:50%;background:var(--danger);box-shadow:0 0 0 2px var(--panel)}
@@ -131,7 +134,7 @@ dialog .fileBox{margin:0}
 main{display:flex;flex-direction:column;min-width:0;min-height:0}
 .bar{background:var(--panel);border-bottom:1px solid var(--line);padding:10px 14px 10px;display:flex;flex-direction:column;gap:8px}
 .sites{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
-.site{color:inherit;text-decoration:none;cursor:pointer}
+.site{color:inherit;text-decoration:none;cursor:pointer;-webkit-touch-callout:none}
 .site{display:inline-flex;align-items:center;gap:6px;padding:3px 10px 3px 4px;border:1px solid var(--line2);border-radius:999px;background:var(--panel);font-size:13px;user-select:none}
 .site:hover{background:var(--chip)}
 .site .bd{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--c);color:#fff;font-size:11px;font-weight:700;flex:none}
@@ -342,6 +345,8 @@ dialog.small{width:min(460px,calc(100vw - 32px))}
       <label class="mode"><input type="radio" name="mode" value="admin"><span><b>管理者モード</b><small>分類・ワード・サイトの 🗑 の横の ♡ で、センシティブかどうかを切り替えられます（♥＝センシティブ）。サイトは「⚙ サイトの管理」で設定します。</small></span></label>
       <label class="mode"><input type="radio" name="mode" value="safe"><span><b>セーフティモード</b><small>センシティブにしたものを隠します（分類は中身ごと）。最近の検索からも消え、切り替えた時点の検索結果も閉じます。人に見せるときに。</small></span></label>
     </div>
+    <div class="modeT" style="margin-top:18px">この端末</div>
+    <label class="mode"><input type="checkbox" id="roChk"><span><b>読み取り専用</b><small>追加・編集・削除・並べ替えをできなくし、JSONファイルには書き込みません（読むだけ）。ほかの端末でファイルが更新されていたら、この画面に戻ったときに読み直します。この設定はJSONには入らず、この端末のブラウザにだけ残ります。</small></span></label>
     <div class="modeT" style="margin-top:18px">データの保存</div>
     <div class="fileBox" id="fileBox"></div>
     <p class="note">JSONファイルを作ると、以後の変更は自動でそのファイルに保存されます。ブラウザを開き直したら「再接続」を押してください（必要なときは設定ボタンに赤い点が付きます）。</p>
@@ -370,6 +375,7 @@ dialog.small{width:min(460px,calc(100vw - 32px))}
       <tr><th>分類名</th><td>クリックで開閉、ダブルクリックで名前を変える、＋ でサブ分類を作る</td></tr>
       <tr><th>分類のドラッグ</th><td>別の分類の見出しの上端・下端に落とすとその前・後ろへ、真ん中に落とすとその中へ（サブ分類になる）。数字は「その分類のワード数/サブ分類を含めた数」</td></tr>
       <tr><th>既定</th><td>サイト一覧の先頭の「既定」を選ぶと、クリックしたワードの分類の既定サイトで検索（<kbd>Alt</kbd>+<kbd>0</kbd>）。分類の見出しの ◎（決めたあとは丸いロゴ）で決める。決めていない分類は親の分類に従い（薄いロゴ）、どこにも無ければ「サイトの管理」で選んだサイト</td></tr>
+      <tr><th>サイトを長押し</th><td>サイトを複数選ぶ（もう一度長押しで外す）。複数のときは、ワードのクリックで全部のサイトを新しいタブで開く。初回はこのページのポップアップを「常に許可」にする</td></tr>
       <tr><th>サイトを中クリック</th><td>そのサイトのトップページを裏タブで開く（検索URLから推測）</td></tr>
       <tr><th>左ペインの幅</th><td>左ペインの右の境界線をドラッグ。ダブルクリックで元の幅</td></tr>
       <tr><th>🗑 スイッチ</th><td>左下のスイッチをオンにすると、分類とワードに削除ボタン（🗑・✕）が出る。分類は中身ごと削除</td></tr>
@@ -379,6 +385,7 @@ dialog.small{width:min(460px,calc(100vw - 32px))}
     <h4>保存・取り消し</h4>
     <table>
       <tr><th>設定の「新規保存…」</th><td>JSONファイルを作ると、以後の変更は自動でそのファイルに保存。開き直したら設定で「再接続」を押す</td></tr>
+      <tr><th>読み取り専用</th><td>設定の「この端末」でオン。編集できなくなり、JSONファイルは読むだけ（書き込まない）。ほかの端末で更新されていたら画面に戻ったときに読み直す。この設定は端末ごと（JSONには入らない）</td></tr>
       <tr><th>↶ 元に戻す</th><td>削除したワード・分類・サイトを新しい順に戻す</td></tr>
     </table>
     <h4>キー操作</h4>
@@ -471,7 +478,7 @@ const exportData = () => ({ app:'web-search-utility', version:1, savedAt:new Dat
    状態
    ========================================================= */
 let data = normalize(LS.get('wsu_data', null) || DEFAULT_DATA);
-let ui = Object.assign({ cat:null, sites:[], open:{}, clickMode:'search', del:false }, LS.get('wsu_ui', {}));
+let ui = Object.assign({ cat:null, sites:[], open:{}, clickMode:'search', del:false, ro:false }, LS.get('wsu_ui', {}));
 if (!['search','tab'].includes(ui.clickMode)) ui.clickMode = ui.clickMode === 'bg' ? 'tab' : 'search';   // 「入力」は廃止
 let hist = LS.get('wsu_hist', []);
 let curWord = '';            // 最後に開いたワード（チップを強調する）
@@ -525,9 +532,22 @@ function catSiteOf(catId){   // 自分 → 親 → … の順に、決めてあ�
   return null;
 }
 function fallbackSite(){ const s = siteById(data.defaultSite); return s && siteShown(s) ? s : visibleSites()[0]; }
-function siteFor(catId){
-  if (ui.sites[0] !== DEF) return siteById(ui.sites[0]);
-  return catSiteOf(catId)?.site || fallbackSite();
+/* 選んでいるサイト（長押しで複数可）。「既定」はこの分類の既定サイトに置き換え、同じサイトは1つにまとめる */
+function sitesFor(catId){
+  const out = [];
+  for (const id of ui.sites){
+    const s = id === DEF ? (catSiteOf(catId)?.site || fallbackSite()) : siteById(id);
+    if (s && !out.includes(s)) out.push(s);
+  }
+  return out;
+}
+const siteFor = catId => sitesFor(catId)[0];
+const POPUP_HELP = 'このページのポップアップを「常に許可」にしてください（PCはアドレスバー右端のアイコン、Androidは Chrome の設定 → サイトの設定 → ポップアップとリダイレクト）';
+function openAllTabs(sites, q){   // 複数サイト：全部新しいタブで開く
+  let blocked = 0;
+  for (const s of sites){ if (!window.open(buildUrl(s, q, false), '_blank')) blocked++; addHist(q, s.id); }
+  if (blocked) toast(`${blocked}つのタブが開けませんでした。${POPUP_HELP}`);
+  if (!current || current.mode === 'popup') renderPh();
 }
 /* 分類ツリーの道具 */
 function findCat(id, list = data.categories, parent = null){
@@ -562,9 +582,11 @@ function idb(){ return new Promise((res, rej) => { const r = indexedDB.open('wsu
 async function idbGet(k){ try{ const db = await idb(); return await new Promise(res => { const t = db.transaction('kv').objectStore('kv').get(k); t.onsuccess = () => res(t.result); t.onerror = () => res(null); }); }catch(e){ return null; } }
 async function idbSet(k, v){ try{ const db = await idb(); await new Promise(res => { const t = db.transaction('kv', 'readwrite'); t.objectStore('kv').put(v, k); t.oncomplete = res; t.onerror = res; }); }catch(e){} }
 
+const PERM = () => ({ mode: ui.ro ? 'read' : 'readwrite' });   // 読み取り専用なら読む許可だけ求める
+let fileMod = 0;   // 最後に読んだファイルの更新時刻
 function save(){
   LS.set('wsu_data', data);
-  if (fileHandle && filePerm === 'granted'){
+  if (fileHandle && filePerm === 'granted' && !ui.ro){
     fileStatus = 'busy'; renderFile();
     clearTimeout(writeTimer);
     writeTimer = setTimeout(writeFile, 350);
@@ -582,12 +604,29 @@ async function writeFile(){
   }
   renderFile();
 }
+/* JSON を読む。後ろにごみが残っていても（Android でファイルが縮まなかったとき）先頭の {…} だけ読む */
+function parseJsonLoose(text){
+  try{ return JSON.parse(text); }catch(e){}
+  const s = text.indexOf('{'); if (s < 0) throw new Error('JSONとして読めませんでした');
+  let depth = 0, inStr = false, esc2 = false;
+  for (let i = s; i < text.length; i++){
+    const ch = text[i];
+    if (inStr){ if (esc2) esc2 = false; else if (ch === '\\') esc2 = true; else if (ch === '"') inStr = false; continue; }
+    if (ch === '"') inStr = true;
+    else if (ch === '{') depth++;
+    else if (ch === '}' && --depth === 0){ try{ return JSON.parse(text.slice(s, i + 1)); }catch(e){ break; } }
+  }
+  throw new Error('JSONとして読めませんでした');
+}
 async function loadFromHandle(h){
   const f = await h.getFile();
   const text = await f.text();
-  if (!text.trim()){ fileStatus = 'busy'; await writeFile(); return; }   // 空ファイル → 今のデータを書く
-  let parsed;
-  try{ parsed = JSON.parse(text); }catch(e){ throw new Error('JSONとして読めませんでした'); }
+  if (!text.trim()){
+    if (ui.ro) throw new Error('ファイルが空です');
+    fileStatus = 'busy'; await writeFile(); return;   // 空ファイル → 今のデータを書く
+  }
+  const parsed = parseJsonLoose(text);
+  fileMod = f.lastModified;
   data = normalize(parsed);
   LS.set('wsu_data', data);
   fixUi(); renderAll();
@@ -596,7 +635,7 @@ async function loadFromHandle(h){
 async function openFile(){
   try{
     const [h] = await showOpenFilePicker({ types:[{ description:'JSON', accept:{ 'application/json':['.json'] } }] });
-    filePerm = await h.requestPermission({ mode:'readwrite' });
+    filePerm = await h.requestPermission(PERM());
     fileHandle = h; await idbSet('file', h);
     await loadFromHandle(h);
     toast('「' + h.name + '」を読み込みました');
@@ -615,11 +654,24 @@ async function newFile(){
 }
 async function reconnect(){
   try{
-    filePerm = await fileHandle.requestPermission({ mode:'readwrite' });
-    if (filePerm === 'granted'){ await loadFromHandle(fileHandle); toast('「' + fileHandle.name + '」に再接続しました'); }
+    filePerm = await fileHandle.requestPermission(PERM());
+    if (filePerm === 'granted'){ await loadFromHandle(fileHandle); toast('「' + fileHandle.name + '」に' + (ui.ro ? '接続しました（読み取り専用）' : '再接続しました')); }
   }catch(e){ toast(e.message || '再接続できませんでした'); }
   renderFile();
 }
+/* 読み取り専用：ファイルがほかの端末で更新されていたら読み直す */
+async function refreshFromFile(manual){
+  if (!fileHandle || filePerm !== 'granted') return;
+  try{
+    const f = await fileHandle.getFile();
+    if (manual || f.lastModified !== fileMod){
+      await loadFromHandle(fileHandle); renderFile();
+      toast(manual ? '読み直しました' : 'JSONファイルの変更を読み込みました');
+    }
+  }catch(e){ toast(e.message || '読み直せませんでした'); }
+}
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && ui.ro) refreshFromFile(false); });
+window.addEventListener('focus', () => { if (ui.ro) refreshFromFile(false); });
 function disconnect(){
   fileHandle = null; filePerm = null; fileStatus = 'idle'; idbSet('file', null); renderFile();
   toast('ファイルとの接続を外しました（データはブラウザ内に残ります）');
@@ -642,6 +694,23 @@ function renderFile(){
   // 保存がファイルに届いていないときは設定ボタンに赤い点
   $('#setBtn').classList.toggle('warn', !!fileHandle && (filePerm !== 'granted' || fileStatus === 'err'));
   $('#setBtn').title = $('#setBtn').classList.contains('warn') ? '設定（JSONファイルに再接続が必要です）' : '設定';
+  if (ui.ro){
+    if (!FSA){
+      box.innerHTML = `<div class="fileName"><span class="dot"></span>読み取り専用</div>
+        <div class="fileBtns"><button data-f="imp" class="hot">JSONを読み込む</button></div>`;
+    } else if (!fileHandle){
+      box.innerHTML = `<div class="fileName"><span class="dot"></span>読み取り専用・ファイル未接続</div>
+        <div class="fileBtns"><button data-f="open" class="hot">JSONを開く…</button></div>`;
+    } else if (filePerm !== 'granted'){
+      box.innerHTML = `<div class="fileName"><span class="dot warn"></span><b>${esc(fileHandle.name)}</b></div>
+        <div class="fileBtns"><button data-f="re" class="hot">接続</button><button data-f="open">別のファイル…</button></div>`;
+    } else {
+      const tm = fileMod ? new Date(fileMod).toLocaleString('ja-JP', { month:'numeric', day:'numeric', hour:'2-digit', minute:'2-digit' }) : '';
+      box.innerHTML = `<div class="fileName" title="このファイルを読むだけで、書き込みません"><span class="dot ok"></span><b>${esc(fileHandle.name)}</b><span>・読み取り専用${tm ? '（' + tm + ' 更新）' : ''}</span></div>
+        <div class="fileBtns"><button data-f="reload">読み直す</button><button data-f="open">別のファイル…</button><button data-f="off" title="ファイルとの接続を外す">外す</button></div>`;
+    }
+    return;
+  }
   if (!FSA){
     box.innerHTML = `<div class="fileName"><span class="dot"></span>ブラウザ内に保存中</div>
       <div class="fileBtns"><button data-f="imp">JSON読込</button><button data-f="exp">JSON書出</button></div>`;
@@ -663,7 +732,7 @@ function renderFile(){
 }
 $('#fileBox').addEventListener('click', e => {
   const f = e.target.closest('button')?.dataset.f; if (!f) return;
-  ({ open:openFile, new:newFile, re:reconnect, off:disconnect, exp:exportDownload, imp:importUpload })[f]();
+  ({ open:openFile, new:newFile, re:reconnect, off:disconnect, exp:exportDownload, imp:importUpload, reload:() => refreshFromFile(true) })[f]();
 });
 
 /* =========================================================
@@ -877,13 +946,14 @@ $('#cats').addEventListener('click', e => {
 function openWord(catId, w){
   if (ui.cat !== catId){ ui.cat = catId; saveUi(); }
   // 開くのは選択中のサイト（「既定」ならこの分類の既定サイト）
-  const site = siteFor(catId);
+  const sites = sitesFor(catId), site = sites[0];
   if (!site){ toast('検索サイトを選んでください'); return; }
   const q = queryWith(w);   // 長押しで選んだワードがあれば「選んだ順＋今のワード」
   setCur(w);   // 選んだワードは検索後も残す（Esc か長押しで外す）
   const el = [...document.querySelectorAll(`${catSel(catId)} > .body > .words > .w`)].find(a => a.dataset.w === w);
   if (el){ el.classList.remove('sent'); void el.offsetWidth; el.classList.add('sent'); }
-  if (ui.clickMode === 'search') showInPanel(site, q);
+  if (sites.length > 1) openAllTabs(sites, q);   // 複数サイトは「クリックで」の切り替えに関係なく全部タブ
+  else if (ui.clickMode === 'search') showInPanel(site, q);
   else {
     if (!window.open(buildUrl(site, q, false), '_blank')) toast('ポップアップがブロックされました。アドレスバー右端のアイコンから「常に許可」にしてください');
     addHist(q, site.id);
@@ -892,6 +962,7 @@ function openWord(catId, w){
 }
 /* 分類の見出しはクリックのたびに描き直すので、ダブルクリックの対象はマウスの位置から探し直す */
 document.addEventListener('dblclick', e => {
+  if (ui.ro) return;   // 読み取り専用では編集しない
   const t = document.elementFromPoint(e.clientX, e.clientY);
   if (!t || !$('#cats').contains(t) || t.closest('button, input')) return;
   const chip = t.closest('.w');
@@ -926,7 +997,7 @@ $('#cats').addEventListener('paste', e => {
 /* ドラッグでワードを並べ替え・別の分類へ移動 */
 let drag = null, dragCat = null;
 $('#cats').addEventListener('dragstart', e => {
-  if (lastPtr === 'touch'){ e.preventDefault(); return; }   // 指の長押しはドラッグにしない（選択にする）
+  if (lastPtr === 'touch' || ui.ro){ e.preventDefault(); return; }   // 指の長押しはドラッグにしない（選択にする）・読み取り専用では並べ替えない
   const head = e.target.closest('.catHead');
   if (head && !e.target.closest('.w')){
     const catEl = head.closest('.cat');
@@ -1009,7 +1080,7 @@ $('#cats').addEventListener('drop', e => {
    ========================================================= */
 function renderSites(){
   // サイトのチップも本物のリンク（href＝トップページ）。中クリックでブラウザが裏タブに開く
-  const html = visibleSites().map((s, i) => `<a class="site${ui.sites.includes(s.id) ? ' on' : ''}" href="${esc(topUrl(s))}" target="_blank" rel="noopener" draggable="false" data-site="${s.id}" style="--c:${colorOf(s)}" title="${esc(s.url)}\n${s.embed ? '下パネルに表示' : '別ウィンドウで表示'}${i < 9 ? '（Alt+' + (i + 1) + '）' : ''}\n中クリックでトップページを裏タブに開く">
+  const html = visibleSites().map((s, i) => `<a class="site${ui.sites.includes(s.id) ? ' on' : ''}" href="${esc(topUrl(s))}" target="_blank" rel="noopener" draggable="false" data-site="${s.id}" style="--c:${colorOf(s)}" title="${esc(s.url)}\n${s.embed ? '下パネルに表示' : '別ウィンドウで表示'}${i < 9 ? '（Alt+' + (i + 1) + '）' : ''}\n長押しで複数選択・中クリックでトップページを裏タブに開く">
       <span class="bd">${esc(initial(s.name))}</span>${esc(s.name)}${s.embed ? '' : '<span class="md">⧉</span>'}${ADMIN() && s.sensitive ? '<span class="sensMark" title="センシティブ">♥</span>' : ''}</a>`).join('');
   const fb = fallbackSite();
   const def = `<button class="site def${ui.sites[0] === DEF ? ' on' : ''}" data-site="${DEF}" title="分類ごとの既定サイトで検索（Alt+0）\n分類の見出しの ◎ で決める。決めていない分類は親の分類、それも無ければ ${esc(fb ? fb.name : '?')}（「サイトの管理」で変更）"><span class="bd">★</span>既定</button>`;
@@ -1021,7 +1092,34 @@ $('#sites').addEventListener('click', e => {
   if (e.target.closest('#helpBtn')){ $('#helpDlg').showModal(); return; }
   const b = e.target.closest('.site'); if (!b) return;
   e.preventDefault();   // 普通のクリックは選ぶだけ（リンクとしては開かない）
+  if (sLpFired){ sLpFired = false; return; }   // 長押しのあとのクリックは無視
   selectSite(b.dataset.site);
+});
+/* サイトの長押し：複数選択に足す／外す（ワードの長押しと同じ操作） */
+let sLp = null, sLpFired = false, sPtr = 'mouse';
+const siteName = id => id === DEF ? '既定' : (siteById(id)?.name || '?');
+function toggleSite(id){
+  if (ui.sites.includes(id)){
+    if (ui.sites.length === 1){ toast('最後の1つは外せません'); return; }
+    ui.sites = ui.sites.filter(x => x !== id);
+  } else ui.sites.push(id);
+  saveUi(); renderSites();
+  toast(ui.sites.length > 1 ? `${ui.sites.map(siteName).join('・')} の${ui.sites.length}つで検索します（全部新しいタブ）` : `${siteName(ui.sites[0])} で検索します`);
+}
+const cancelSLp = () => { if (sLp){ clearTimeout(sLp.t); sLp = null; } };
+$('#sites').addEventListener('pointerdown', e => {
+  cancelSLp(); sLpFired = false; sPtr = e.pointerType || 'mouse';
+  if (e.button !== 0) return;
+  const b = e.target.closest('.site'); if (!b) return;
+  sLp = { x: e.clientX, y: e.clientY, t: setTimeout(() => { sLpFired = true; sLp = null; toggleSite(b.dataset.site); }, LONG_PRESS) };
+});
+$('#sites').addEventListener('pointermove', e => { if (sLp && Math.hypot(e.clientX - sLp.x, e.clientY - sLp.y) > 6) cancelSLp(); });
+['pointerup', 'pointercancel', 'pointerleave'].forEach(ev => $('#sites').addEventListener(ev, cancelSLp));
+$('#sites').addEventListener('contextmenu', e => {   // スマホの長押しメニューを止めて選択にする（マウスの右クリックはそのまま）
+  const b = e.target.closest('.site'); if (!b) return;
+  if (sPtr !== 'touch' && !sLpFired) return;
+  e.preventDefault();
+  if (!sLpFired){ cancelSLp(); sLpFired = true; toggleSite(b.dataset.site); }
 });
 /* 検索URLからトップページを推測：https://ホスト/（search.〜 は www.〜 にする） */
 function topUrl(s){
@@ -1114,9 +1212,10 @@ function updateChipLinks(){
 $('#cats').addEventListener('auxclick', e => {
   const chip = e.target.closest('.w');
   if (!chip || e.button !== 1 || e.target.closest('.x')) return;
-  const s = siteFor(chip.closest('.cat').dataset.cat); if (!s) return;
+  const all = sitesFor(chip.closest('.cat').dataset.cat), s = all[0]; if (!s) return;
   chip.classList.remove('sent'); void chip.offsetWidth; chip.classList.add('sent');
   addHist(queryWith(chip.dataset.w), s.id);
+  if (all.length > 1) openAllTabs(all.slice(1), queryWith(chip.dataset.w));   // 1つ目はブラウザが裏タブで、残りはここで開く（前面になる）
   if (!current || current.mode === 'popup') renderPh();
 });
 function renderClickMode(){
@@ -1264,7 +1363,7 @@ $('#ph').addEventListener('click', e => {
   const r = e.target.closest('.hrow'); if (!r) return;
   const h = hist[+r.dataset.i];
   const s = siteById(h.s); if (!s) return;
-  if (ui.sites[0] !== DEF){ ui.sites = [h.s]; saveUi(); renderSites(); }   // 「既定」のときは選択を変えない
+  if (ui.sites.length === 1 && ui.sites[0] !== DEF){ ui.sites = [h.s]; saveUi(); renderSites(); }   // 「既定」や複数選択のときは選択を変えない
   setCur(h.q);
   if (e.ctrlKey || e.metaKey){ window.open(buildUrl(s, h.q, false), '_blank'); addHist(h.q, s.id); renderPh(); }
   else showInPanel(s, h.q);
@@ -1449,6 +1548,17 @@ $('#pasteWord').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.i
 $('#helpDlg').addEventListener('click', e => { if (e.target === $('#helpDlg') || e.target.closest('[data-close]')) $('#helpDlg').close(); });
 
 /* 設定：表示モード */
+async function setRo(on){
+  ui.ro = on; saveUi(); applyRo();
+  if (on){ undoStack = []; renderUndo(); }
+  if (fileHandle && FSA){
+    try{ filePerm = await fileHandle.queryPermission(PERM()); }catch(e){ filePerm = 'prompt'; }   // 書き込みに戻すときは「再接続」で許可を取り直す
+  }
+  renderFile();
+  toast(on ? '読み取り専用にしました（この端末だけ）' : '編集できるようにしました');
+}
+function applyRo(){ document.body.classList.toggle('ro', !!ui.ro); $('#roChk').checked = !!ui.ro; }
+$('#roChk').addEventListener('change', e => setRo(e.target.checked));
 $('#setBtn').onclick = () => {
   document.querySelectorAll('#modes input').forEach(r => { r.checked = r.value === ui.mode; });
   $('#setDlg').showModal();
@@ -1478,7 +1588,7 @@ document.addEventListener('keydown', e => {
     if (s){ e.preventDefault(); selectSite(s.id, e.ctrlKey || e.shiftKey); }
     return;
   }
-  if (!typing && (e.ctrlKey || e.metaKey) && !e.shiftKey && e.key.toLowerCase() === 'z'){ e.preventDefault(); undoLast(); return; }
+  if (!typing && !ui.ro && (e.ctrlKey || e.metaKey) && !e.shiftKey && e.key.toLowerCase() === 'z'){ e.preventDefault(); undoLast(); return; }
   if (!typing && e.key === 'Escape' && picks.length){ clearPicks(); toast('選択を解除しました'); return; }
   if (!typing && e.key === '?'){ e.preventDefault(); $('#helpDlg').showModal(); return; }
 });
@@ -1491,13 +1601,13 @@ function renderAll(){ renderCats(); renderSites(); renderHead(); if (!current ||
 (async function init(){
   if (!LS.get('wsu_data', null)) LS.set('wsu_data', data);   // 初回：サイトの id を固定（選択が再読み込みで外れないように）
   fixUi(); saveUi();
-  renderAll(); renderFile(); renderUndo(); renderClickMode(); renderDelTog(); applySideW();
+  renderAll(); renderFile(); renderUndo(); renderClickMode(); renderDelTog(); applySideW(); applyRo();
   if (FSA){
     const h = await idbGet('file');
     if (h){
       fileHandle = h;
       try{
-        filePerm = await h.queryPermission({ mode:'readwrite' });
+        filePerm = await h.queryPermission(PERM());
         if (filePerm === 'granted') await loadFromHandle(h);
       }catch(e){ filePerm = 'prompt'; }
       renderFile();
