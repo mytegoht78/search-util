@@ -88,7 +88,7 @@ body.resizing iframe{pointer-events:none}
 .cat.drag{opacity:.4}
 .catHead input{flex:1;min-width:0;padding:1px 4px;border:1px solid var(--accent);border-radius:4px;background:var(--panel);outline:none;font-weight:600}
 .words{display:flex;flex-wrap:wrap;gap:5px;padding:4px 6px 10px calc(26px + var(--d,0) * 16px)}
-.w{color:inherit;text-decoration:none;-webkit-user-drag:element}
+.w{color:inherit;text-decoration:none;-webkit-user-drag:element;-webkit-touch-callout:none}
 .w{position:relative;display:inline-flex;align-items:center;max-width:100%;padding:3px 10px;background:var(--chip);border:1px solid transparent;border-radius:999px;cursor:pointer;user-select:none;font-size:13px}
 .w span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .w:hover{background:var(--chipHover)}
@@ -138,6 +138,22 @@ main{display:flex;flex-direction:column;min-width:0;min-height:0}
 .site.on{border-color:var(--accent);background:var(--accentSoft);font-weight:600}
 .site .md{font-size:10px;color:var(--faint);font-weight:400}
 .site .num{font-size:10px;color:var(--faint);margin-left:-2px}
+/* 既定のサイト（分類ごと） */
+.site.def .bd{background:linear-gradient(135deg,#7a8394,#3b414d);font-size:10px}
+.catHead .cs{flex:none;display:inline-grid;place-items:center;width:16px;height:16px;border-radius:50%;border:0;padding:0;background:var(--c);color:#fff;font-size:9px;font-weight:700;line-height:1;cursor:pointer}
+.catHead .cs.inh{opacity:.35}
+.catHead .cs:hover{opacity:1;box-shadow:0 0 0 2px var(--panel),0 0 0 3px var(--accent)}
+.pickMenu{position:fixed;z-index:60;min-width:220px;max-width:calc(100vw - 16px);max-height:60vh;overflow:auto;background:var(--panel);border:1px solid var(--line2);border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.25);padding:4px}
+.pickMenu[hidden]{display:none}
+.pickMenu .pt{padding:6px 10px 4px;font-size:11.5px;color:var(--faint);font-weight:700}
+.pickMenu button{display:flex;align-items:center;gap:8px;width:100%;padding:6px 10px;border:0;background:none;border-radius:6px;text-align:left;font-size:13px}
+.pickMenu button:hover{background:var(--chip)}
+.pickMenu .bd{display:inline-grid;place-items:center;width:18px;height:18px;border-radius:50%;background:var(--c,var(--line2));color:#fff;font-size:10px;font-weight:700;flex:none}
+.pickMenu .ck{margin-left:auto;color:var(--accent);font-weight:700}
+.pickMenu .sub{color:var(--faint);font-size:12px}
+.fallRow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--panel2);font-size:13px}
+.fallRow select{padding:4px 8px;border:1px solid var(--line2);border-radius:6px;background:var(--panel);font-size:13px}
+.fallRow small{flex-basis:100%;color:var(--sub);font-size:12px}
 .ghost{border:1px dashed var(--line2);background:none;border-radius:999px;padding:3px 10px;color:var(--sub);font-size:13px}
 .ghost:hover{color:var(--text);border-color:var(--accent)}
 .btn{border:1px solid var(--line2);background:var(--panel);border-radius:10px;padding:0 14px;white-space:nowrap;font-weight:600}
@@ -299,6 +315,8 @@ dialog.small{width:min(460px,calc(100vw - 32px))}
 <dialog id="siteDlg">
   <div class="dlgH"><h3>検索サイトの管理</h3><button id="dlgClose" title="閉じる">×</button></div>
   <div class="dlgB">
+    <div class="fallRow"><span>既定サイトを決めていない分類で使うサイト</span><select id="fallSite"></select>
+      <small>上のサイト一覧の先頭「既定」を選んでいるときは、クリックしたワードの分類（決めていなければ親の分類）の既定サイトで検索します。分類の既定サイトは、分類の見出しの ◎ または丸いロゴで決めます。</small></div>
     <div id="srows"></div>
     <p class="note">URLの中の <code>{q}</code> が検索ワードに置き換わります。<code>{q}</code> が無いときは末尾に付けます。<br>
     「表示」は下パネルに埋め込むか、別ウィンドウ（下パネルの位置に重ねて開く）にするかです。X・Amazon・YouTube などは埋め込みを拒否するので別ウィンドウになります。埋め込みで真っ白・拒否画面になるサイトは別ウィンドウにしてください。</p>
@@ -351,6 +369,7 @@ dialog.small{width:min(460px,calc(100vw - 32px))}
     <table>
       <tr><th>分類名</th><td>クリックで開閉、ダブルクリックで名前を変える、＋ でサブ分類を作る</td></tr>
       <tr><th>分類のドラッグ</th><td>別の分類の見出しの上端・下端に落とすとその前・後ろへ、真ん中に落とすとその中へ（サブ分類になる）。数字は「その分類のワード数/サブ分類を含めた数」</td></tr>
+      <tr><th>既定</th><td>サイト一覧の先頭の「既定」を選ぶと、クリックしたワードの分類の既定サイトで検索（<kbd>Alt</kbd>+<kbd>0</kbd>）。分類の見出しの ◎（決めたあとは丸いロゴ）で決める。決めていない分類は親の分類に従い（薄いロゴ）、どこにも無ければ「サイトの管理」で選んだサイト</td></tr>
       <tr><th>サイトを中クリック</th><td>そのサイトのトップページを裏タブで開く（検索URLから推測）</td></tr>
       <tr><th>左ペインの幅</th><td>左ペインの右の境界線をドラッグ。ダブルクリックで元の幅</td></tr>
       <tr><th>🗑 スイッチ</th><td>左下のスイッチをオンにすると、分類とワードに削除ボタン（🗑・✕）が出る。分類は中身ごと削除</td></tr>
@@ -371,6 +390,7 @@ dialog.small{width:min(460px,calc(100vw - 32px))}
   </div>
 </dialog>
 
+<div class="pickMenu" id="sitePick" hidden></div>
 <div id="toast"><span id="toastMsg"></span><button id="toastAct" hidden></button></div>
 
 <script>
@@ -427,6 +447,7 @@ function normalize(d){
       seen.add(id);
       const o = { id, name: String(c.name ?? '').trim() || '無題', words, children: normCats(c.children) };
       if (c.sensitive) o.sensitive = true;
+      if (c.site) o.site = String(c.site);   // この分類の既定サイト
       const sw = (Array.isArray(c.sensitiveWords) ? c.sensitiveWords : []).filter(w => words.includes(w));
       if (sw.length) o.sensitiveWords = [...new Set(sw)];
       res.push(o);
@@ -441,9 +462,10 @@ function normalize(d){
     if (s.sensitive) o.sensitive = true;
     out.sites.push(o);
   }
+  if (d.defaultSite && out.sites.some(s => s.id === d.defaultSite)) out.defaultSite = d.defaultSite;   // 既定サイトの無い分類で使うサイト
   return out;
 }
-const exportData = () => ({ app:'web-search-utility', version:1, savedAt:new Date().toISOString(), categories:data.categories, sites:data.sites });
+const exportData = () => ({ app:'web-search-utility', version:1, savedAt:new Date().toISOString(), categories:data.categories, sites:data.sites, defaultSite:data.defaultSite });
 
 /* =========================================================
    状態
@@ -456,6 +478,7 @@ let curWord = '';            // 最後に開いたワード（チップを強調
 let clickTimer = null;       // ダブルクリック（編集）と見分けるため、クリックは少し待ってから開く
 let picks = [];              // 長押しで選んだワード（選んだ順）。次にクリックしたワードと合わせて検索する
 let lp = null, lpFired = false;   // 長押しの判定
+let lastPtr = 'mouse';            // 最後に押したのが指（touch）かマウスか
 const LONG_PRESS = 450;
 let current = null;          // 下パネルに出している検索 {q, siteId, url, mode}
 let resultWin = null;        // 別ウィンドウ
@@ -485,11 +508,27 @@ function hiddenWords(){   // セーフティモードで隠れるワード（履
 function fixUi(){
   const shown = new Set(); walkShown(c => shown.add(c.id));
   if (!shown.has(ui.cat)) ui.cat = [...shown][0] || null;
-  ui.sites = (ui.sites || []).filter(id => data.sites.some(s => s.id === id && siteShown(s)));
+  ui.sites = (ui.sites || []).filter(id => id === DEF || data.sites.some(s => s.id === id && siteShown(s)));
   if (!ui.sites.length && visibleSites()[0]) ui.sites = [visibleSites()[0].id];
   if (ui.cat && ui.open[ui.cat] === undefined) ui.open[ui.cat] = true;
 }
 const saveUi = () => LS.set('wsu_ui', ui);
+/* 既定のサイト：上の一覧の先頭「既定」（ui.sites[0] === DEF）を選んでいるときは、分類ごとの既定サイトで検索する */
+const DEF = '__def';
+function catSiteOf(catId){   // 自分 → 親 → … の順に、決めてある既定サイト（見えるものだけ）
+  let at = findCat(catId);
+  while (at){
+    const s = at.c.site && siteById(at.c.site);
+    if (s && siteShown(s)) return { site: s, from: at.c };
+    at = at.parent ? findCat(at.parent.id) : null;
+  }
+  return null;
+}
+function fallbackSite(){ const s = siteById(data.defaultSite); return s && siteShown(s) ? s : visibleSites()[0]; }
+function siteFor(catId){
+  if (ui.sites[0] !== DEF) return siteById(ui.sites[0]);
+  return catSiteOf(catId)?.site || fallbackSite();
+}
 /* 分類ツリーの道具 */
 function findCat(id, list = data.categories, parent = null){
   for (let i = 0; i < list.length; i++){
@@ -679,6 +718,14 @@ function deleteWord(c, w){
 /* =========================================================
    サイドバー：分類とワード
    ========================================================= */
+function siteLogo(c){
+  const own = c.site && siteById(c.site), ownShown = own && siteShown(own);
+  const inh = ownShown ? null : catSiteOf(c.id);
+  const s = ownShown ? own : inh?.site;
+  if (!s) return `<button class="ib csSet" title="この分類の既定サイトを決める">◎</button>`;
+  const title = ownShown ? `既定サイト：${s.name}（クリックで変える）` : `既定サイト：${s.name}（「${inh.from.name}」から引き継ぎ。クリックでこの分類だけ変える）`;
+  return `<button class="cs${ownShown ? '' : ' inh'}" style="--c:${colorOf(s)}" title="${esc(title)}">${esc(initial(s.name))}</button>`;
+}
 function renderCats(){
   const q = curWord;
   const host = $('#cats');
@@ -697,6 +744,7 @@ function renderCats(){
         <svg class="tri" viewBox="0 0 10 10" width="10" height="10"><path d="M3 1.5L7 5 3 8.5" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>
         <svg class="fold" width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M3 6a2 2 0 0 1 2-2h4.2a2 2 0 0 1 1.4.6L12 6h7a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" opacity=".85"/></svg>
         <span class="nm">${esc(c.name)}</span>
+        ${siteLogo(c)}
         <span class="cnt">${cnt}</span>
         <button class="ib addSub" title="サブ分類を追加">＋</button>
         <button class="ib del" title="分類を削除（中身ごと）">🗑</button>
@@ -705,7 +753,7 @@ function renderCats(){
       <div class="body">
         ${kids}
         <div class="words">
-          ${words.map(w => { const sw = admin && isSensWord(c, w); return `<a class="w${w === q ? ' cur' : ''}${sw ? ' sensW' : ''}${picks.includes(w) ? ' pick' : ''}"${picks.includes(w) ? ` data-n="${picks.indexOf(w) + 1}"` : ''} href="${esc(chipUrl(w))}" target="_blank" rel="noopener" draggable="true" data-w="${esc(w)}" title="${esc(w)}（長押しで選択、中クリックで裏タブ、ダブルクリックで編集）"><span>${esc(w)}</span>${admin ? `<button class="hx${sw ? ' on' : ''}" title="${sw ? 'センシティブを解除' : 'センシティブにする'}">${sw ? '♥' : '♡'}</button>` : ''}<button class="x" title="削除">✕</button></a>`; }).join('')}
+          ${words.map(w => { const sw = admin && isSensWord(c, w); return `<a class="w${w === q ? ' cur' : ''}${sw ? ' sensW' : ''}${picks.includes(w) ? ' pick' : ''}"${picks.includes(w) ? ` data-n="${picks.indexOf(w) + 1}"` : ''} href="${esc(chipUrl(w, c.id))}" target="_blank" rel="noopener" draggable="true" data-w="${esc(w)}" title="${esc(w)}（長押しで選択、中クリックで裏タブ、ダブルクリックで編集）"><span>${esc(w)}</span>${admin ? `<button class="hx${sw ? ' on' : ''}" title="${sw ? 'センシティブを解除' : 'センシティブにする'}">${sw ? '♥' : '♡'}</button>` : ''}<button class="x" title="削除">✕</button></a>`; }).join('')}
           <input class="addWord" placeholder="＋ ワード" title="Enterで追加（複数行の貼り付けもOK）">
         </div>
       </div>
@@ -785,6 +833,7 @@ $('#cats').addEventListener('click', e => {
   const catEl = e.target.closest('.cat'); if (!catEl) return;
   const id = catEl.dataset.cat, c = catById(id);
   if (e.target.closest('.addSub')){ addCategory(id); return; }
+  if (e.target.closest('.cs, .csSet')){ openSitePick(id, e.target.closest('.cs, .csSet')); return; }
   if (e.target.closest('.catHead .sens')){
     if (c.sensitive) delete c.sensitive; else c.sensitive = true;
     save(); renderCats(); return;
@@ -827,8 +876,8 @@ $('#cats').addEventListener('click', e => {
 });
 function openWord(catId, w){
   if (ui.cat !== catId){ ui.cat = catId; saveUi(); }
-  // 開くのは選択中の1つ目のサイトだけ
-  const site = siteById(ui.sites[0]);
+  // 開くのは選択中のサイト（「既定」ならこの分類の既定サイト）
+  const site = siteFor(catId);
   if (!site){ toast('検索サイトを選んでください'); return; }
   const q = queryWith(w);   // 長押しで選んだワードがあれば「選んだ順＋今のワード」
   setCur(w);   // 選んだワードは検索後も残す（Esc か長押しで外す）
@@ -877,6 +926,7 @@ $('#cats').addEventListener('paste', e => {
 /* ドラッグでワードを並べ替え・別の分類へ移動 */
 let drag = null, dragCat = null;
 $('#cats').addEventListener('dragstart', e => {
+  if (lastPtr === 'touch'){ e.preventDefault(); return; }   // 指の長押しはドラッグにしない（選択にする）
   const head = e.target.closest('.catHead');
   if (head && !e.target.closest('.w')){
     const catEl = head.closest('.cat');
@@ -961,7 +1011,9 @@ function renderSites(){
   // サイトのチップも本物のリンク（href＝トップページ）。中クリックでブラウザが裏タブに開く
   const html = visibleSites().map((s, i) => `<a class="site${ui.sites.includes(s.id) ? ' on' : ''}" href="${esc(topUrl(s))}" target="_blank" rel="noopener" draggable="false" data-site="${s.id}" style="--c:${colorOf(s)}" title="${esc(s.url)}\n${s.embed ? '下パネルに表示' : '別ウィンドウで表示'}${i < 9 ? '（Alt+' + (i + 1) + '）' : ''}\n中クリックでトップページを裏タブに開く">
       <span class="bd">${esc(initial(s.name))}</span>${esc(s.name)}${s.embed ? '' : '<span class="md">⧉</span>'}${ADMIN() && s.sensitive ? '<span class="sensMark" title="センシティブ">♥</span>' : ''}</a>`).join('');
-  $('#sites').innerHTML = html + `<button class="ghost" id="manage">⚙ サイトの管理</button><button class="ghost" id="helpBtn" title="使い方（?キー）">？ 使い方</button>`;
+  const fb = fallbackSite();
+  const def = `<button class="site def${ui.sites[0] === DEF ? ' on' : ''}" data-site="${DEF}" title="分類ごとの既定サイトで検索（Alt+0）\n分類の見出しの ◎ で決める。決めていない分類は親の分類、それも無ければ ${esc(fb ? fb.name : '?')}（「サイトの管理」で変更）"><span class="bd">★</span>既定</button>`;
+  $('#sites').innerHTML = def + html + `<button class="ghost" id="manage">⚙ サイトの管理</button><button class="ghost" id="helpBtn" title="使い方（?キー）">？ 使い方</button>`;
   updateChipLinks();
 }
 $('#sites').addEventListener('click', e => {
@@ -1009,8 +1061,8 @@ function setCur(w){
 
 /* ワードのチップは本物のリンク。中クリック（ホイールクリック）でブラウザ自身が裏タブに開く
    ※ページのスクリプトからは裏タブを開けない（Chrome の制限）ため、この方式にしている */
-function chipUrl(w){
-  const s = siteById(ui.sites[0]);
+function chipUrl(w, catId){
+  const s = siteFor(catId);
   return s ? buildUrl(s, queryWith(w), false) : '#';
 }
 /* 複数検索：長押しで選んだワード＋クリックしたワード（重ならないように最後に足す） */
@@ -1034,7 +1086,7 @@ function clearPicks(){ picks = []; renderPicks(); }
 /* 長押しの判定：押したまま 0.45秒、動かしたら（ドラッグ）取りやめ */
 const cancelLp = () => { if (lp){ clearTimeout(lp.t); lp.el.classList.remove('pressing'); lp = null; } };
 $('#cats').addEventListener('pointerdown', e => {
-  cancelLp(); lpFired = false;
+  cancelLp(); lpFired = false; lastPtr = e.pointerType || 'mouse';
   if (e.button !== 0) return;
   const chip = e.target.closest('.w'); if (!chip || e.target.closest('button')) return;
   chip.classList.add('pressing');
@@ -1046,16 +1098,23 @@ $('#cats').addEventListener('pointerdown', e => {
   }, LONG_PRESS) };
 });
 $('#cats').addEventListener('pointermove', e => { if (lp && Math.hypot(e.clientX - lp.x, e.clientY - lp.y) > 6) cancelLp(); });
-['pointerup', 'pointercancel', 'dragstart'].forEach(ev => $('#cats').addEventListener(ev, cancelLp));
+['pointerup', 'pointercancel'].forEach(ev => $('#cats').addEventListener(ev, cancelLp));
+$('#cats').addEventListener('dragstart', () => { if (lastPtr !== 'touch') cancelLp(); });
 $('#cats').addEventListener('pointerleave', cancelLp);
-$('#cats').addEventListener('contextmenu', e => { if (lpFired && e.target.closest('.w')) e.preventDefault(); });   // スマホの長押しメニューを出さない
+/* スマホ（Android）：指の長押しで出るリンクのメニューを止め、代わりに選択にする */
+$('#cats').addEventListener('contextmenu', e => {
+  const chip = e.target.closest('.w'); if (!chip) return;
+  if (lastPtr !== 'touch' && !lpFired) return;   // マウスの右クリックはふつうのメニュー
+  e.preventDefault();
+  if (!lpFired){ cancelLp(); lpFired = true; clearTimeout(clickTimer); togglePick(chip.dataset.w); }
+});
 function updateChipLinks(){
-  document.querySelectorAll('#cats .w').forEach(a => { a.href = chipUrl(a.dataset.w); });
+  document.querySelectorAll('#cats .w').forEach(a => { a.href = chipUrl(a.dataset.w, a.closest('.cat').dataset.cat); });
 }
 $('#cats').addEventListener('auxclick', e => {
   const chip = e.target.closest('.w');
   if (!chip || e.button !== 1 || e.target.closest('.x')) return;
-  const s = siteById(ui.sites[0]); if (!s) return;
+  const s = siteFor(chip.closest('.cat').dataset.cat); if (!s) return;
   chip.classList.remove('sent'); void chip.offsetWidth; chip.classList.add('sent');
   addHist(queryWith(chip.dataset.w), s.id);
   if (!current || current.mode === 'popup') renderPh();
@@ -1205,7 +1264,8 @@ $('#ph').addEventListener('click', e => {
   const r = e.target.closest('.hrow'); if (!r) return;
   const h = hist[+r.dataset.i];
   const s = siteById(h.s); if (!s) return;
-  ui.sites = [h.s]; saveUi(); renderSites(); setCur(h.q);
+  if (ui.sites[0] !== DEF){ ui.sites = [h.s]; saveUi(); renderSites(); }   // 「既定」のときは選択を変えない
+  setCur(h.q);
   if (e.ctrlKey || e.metaKey){ window.open(buildUrl(s, h.q, false), '_blank'); addHist(h.q, s.id); renderPh(); }
   else showInPanel(s, h.q);
 });
@@ -1218,7 +1278,43 @@ $('#dlgClose').onclick = () => $('#siteDlg').close();
 $('#siteDlg').addEventListener('click', e => { if (e.target === $('#siteDlg')) $('#siteDlg').close(); });
 $('#siteDlg').addEventListener('close', () => { fixUi(); renderSites(); });
 
+/* 分類の既定サイトを選ぶ小さなメニュー */
+let pickCat = null;
+function openSitePick(catId, anchor){
+  const c = catById(catId); if (!c) return;
+  pickCat = catId;
+  const own = c.site && siteById(c.site) && siteShown(siteById(c.site)) ? c.site : '';
+  const parentAt = findCat(catId).parent;
+  const inh = parentAt ? catSiteOf(parentAt.id) : null;
+  const fb = fallbackSite();
+  const noneLabel = inh ? `親に従う（${esc(inh.site.name)}）` : `決めない（${esc(fb ? fb.name : '?')}）`;
+  const m = $('#sitePick');
+  m.innerHTML = `<div class="pt">「${esc(c.name)}」の既定サイト</div>
+    <button data-v=""><span class="bd">–</span><span class="sub">${noneLabel}</span>${own ? '' : '<span class="ck">✓</span>'}</button>` +
+    visibleSites().map(s => `<button data-v="${s.id}"><span class="bd" style="--c:${colorOf(s)}">${esc(initial(s.name))}</span>${esc(s.name)}${own === s.id ? '<span class="ck">✓</span>' : ''}</button>`).join('');
+  m.hidden = false;
+  const r = anchor.getBoundingClientRect(), mw = m.offsetWidth, mh = m.offsetHeight;
+  m.style.left = Math.max(8, Math.min(r.left, window.innerWidth - mw - 8)) + 'px';
+  m.style.top = (r.bottom + 4 + mh > window.innerHeight ? Math.max(8, r.top - mh - 4) : r.bottom + 4) + 'px';
+}
+const closeSitePick = () => { $('#sitePick').hidden = true; pickCat = null; };
+$('#sitePick').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  const c = catById(pickCat); closeSitePick(); if (!c) return;
+  if (b.dataset.v) c.site = b.dataset.v; else delete c.site;
+  save(); renderCats();
+  if (ui.sites[0] !== DEF) toast(`「${c.name}」の既定サイトを決めました。上の「既定」を選んでいるときに使われます`, '「既定」にする', () => selectSite(DEF));
+});
+document.addEventListener('pointerdown', e => { if (pickCat && !e.target.closest('#sitePick, .cs, .csSet')) closeSitePick(); }, true);
+document.addEventListener('keydown', e => { if (pickCat && e.key === 'Escape'){ e.stopImmediatePropagation(); closeSitePick(); } }, true);
+$('#cats').addEventListener('scroll', closeSitePick);
+function renderFallSite(){
+  const fb = fallbackSite();
+  $('#fallSite').innerHTML = visibleSites().map(s => `<option value="${s.id}"${fb && fb.id === s.id ? ' selected' : ''}>${esc(s.name)}</option>`).join('');
+}
+$('#fallSite').addEventListener('change', e => { data.defaultSite = e.target.value; save(); renderCats(); renderSites(); });
 function renderSrows(){
+  renderFallSite();
   const list = visibleSites();
   $('#srows').innerHTML = list.map((s, i) => `<div class="srow${ADMIN() && s.sensitive ? ' sensRow' : ''}" data-id="${s.id}">
     <label class="bd" style="--c:${colorOf(s)}" title="クリックで色を変える"><span>${esc(initial(s.name))}</span><input type="color" class="col" value="${colorOf(s)}"></label>
@@ -1376,6 +1472,7 @@ function setMode(m){
 document.addEventListener('keydown', e => {
   if ($('#siteDlg').open || $('#helpDlg').open || $('#setDlg').open) return;
   const typing = /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName);
+  if (e.altKey && e.key === '0'){ e.preventDefault(); selectSite(DEF); return; }
   if (e.altKey && /^[1-9]$/.test(e.key)){
     const s = visibleSites()[+e.key - 1];
     if (s){ e.preventDefault(); selectSite(s.id, e.ctrlKey || e.shiftKey); }
