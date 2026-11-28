@@ -343,7 +343,7 @@ dialog.small{width:min(460px,calc(100vw - 32px))}
       <tr><th>クリック</th><td>左上の「クリックで」で選んだ動き（下パネルで検索／新しいタブで開く）</td></tr>
       <tr><th>中クリック</th><td>マウスのホイールを押し込むと、新しいタブを<b>裏で</b>開く</td></tr>
       <tr><th>ダブルクリック</th><td>ワードを書き換える（<kbd>Enter</kbd> で確定、<kbd>Esc</kbd> でやめる）</td></tr>
-      <tr><th>長押し</th><td>ワードを選ぶ（もう一度長押しで外す、複数可）。選んだ状態で別のワードをクリックすると「選んだ順＋そのワード」で検索。<kbd>Esc</kbd> で全部解除</td></tr>
+      <tr><th>長押し</th><td>ワードを選ぶ（もう一度長押しで外す、複数可）。選んだ状態で別のワードをクリックすると「選んだ順＋そのワード」で検索。選択は検索後も残るので、続けて別のワードと組み合わせられる。<kbd>Esc</kbd> で全部解除</td></tr>
       <tr><th>ドラッグ</th><td>並べ替え。分類名の上に落とすとその分類へ移動</td></tr>
       <tr><th>＋ ワード</th><td>入力して <kbd>Enter</kbd>。複数行を貼り付けるとまとめて追加</td></tr>
     </table>
@@ -831,8 +831,7 @@ function openWord(catId, w){
   const site = siteById(ui.sites[0]);
   if (!site){ toast('検索サイトを選んでください'); return; }
   const q = queryWith(w);   // 長押しで選んだワードがあれば「選んだ順＋今のワード」
-  setCur(w);
-  if (picks.length) clearPicks();
+  setCur(w);   // 選んだワードは検索後も残す（Esc か長押しで外す）
   const el = [...document.querySelectorAll(`${catSel(catId)} > .body > .words > .w`)].find(a => a.dataset.w === w);
   if (el){ el.classList.remove('sent'); void el.offsetWidth; el.classList.add('sent'); }
   if (ui.clickMode === 'search') showInPanel(site, q);
@@ -1028,7 +1027,7 @@ function togglePick(w){
   const i = picks.indexOf(w);
   if (i >= 0) picks.splice(i, 1); else picks.push(w);
   renderPicks();
-  if (picks.length) toast(`選択中：${picks.join(' ')}　→ 次にクリックしたワードと合わせて検索（Escで解除）`);
+  if (picks.length) toast(`選択中：${picks.join(' ')}　→ クリックしたワードと合わせて検索（Escで解除）`);
   else toast('選択を解除しました');
 }
 function clearPicks(){ picks = []; renderPicks(); }
@@ -1059,7 +1058,6 @@ $('#cats').addEventListener('auxclick', e => {
   const s = siteById(ui.sites[0]); if (!s) return;
   chip.classList.remove('sent'); void chip.offsetWidth; chip.classList.add('sent');
   addHist(queryWith(chip.dataset.w), s.id);
-  if (picks.length) setTimeout(clearPicks, 0);   // リンク先（href）を使い終わってから選択を解く
   if (!current || current.mode === 'popup') renderPh();
 });
 function renderClickMode(){
